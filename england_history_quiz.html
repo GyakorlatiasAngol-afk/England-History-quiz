@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The England History Quiz</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    background: #0d0d1a;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+
+  .page-bg {
+    position: fixed;
+    inset: 0;
+    background: #0d0d1a;
+    z-index: -2;
+  }
+
+  .page-pattern {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    opacity: 0.04;
+    background-image:
+      repeating-linear-gradient(0deg, #C8102E 0 2px, transparent 2px 60px),
+      repeating-linear-gradient(90deg, #C8102E 0 2px, transparent 2px 60px);
+  }
+
+  .wrap {
+    width: 100%;
+    max-width: 680px;
+  }
+
+  /* ── Banner ── */
+  .banner {
+    background: #12122a;
+    border-radius: 20px;
+    padding: 2.5rem 2rem 2rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #2a2a4a;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+  }
+  .banner::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 5px;
+    background: repeating-linear-gradient(90deg, #C8102E 0 33.33%, #fff 33.33% 66.66%, #012169 66.66% 100%);
+  }
+
+  .crest { display: flex; justify-content: center; margin-bottom: 1.25rem; }
+
+  .banner-title {
+    font-family: 'Palatino Linotype', Palatino, Georgia, serif;
+    font-size: 32px;
+    font-weight: normal;
+    color: #F5E6C8;
+    letter-spacing: 1px;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+
+  .banner-rule {
+    width: 60px;
+    height: 2px;
+    background: #C8102E;
+    margin: 10px auto;
+  }
+
+  .banner-sub {
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    color: #7a6f80;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+  }
+
+  /* ── Progress ── */
+  .dots-row {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+  .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #2a2a4a;
+    border: 1px solid #3a3a5a;
+    transition: all .3s;
+  }
+  .dot.correct  { background: #3B6D11; border-color: #639922; }
+  .dot.wrong    { background: #A32D2D; border-color: #E24B4A; }
+  .dot.current  { border: 2px solid #C8102E; background: #1e1e35; }
+
+  .prog-wrap {
+    background: #1e1e35;
+    border-radius: 99px;
+    height: 4px;
+    margin-bottom: 6px;
+  }
+  .prog-fill {
+    height: 4px;
+    border-radius: 99px;
+    background: #C8102E;
+    transition: width .5s ease;
+  }
+  .prog-label {
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    color: #5a5a7a;
+    text-align: right;
+    margin-bottom: 1.25rem;
+    letter-spacing: 0.3px;
+  }
+
+  /* ── Question Card ── */
+  .q-card {
+    background: #12122a;
+    border: 1px solid #2a2a4a;
+    border-top: 3px solid #012169;
+    border-radius: 16px;
+    padding: 1.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .era-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+  .era-badge {
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 99px;
+    background: #2a1a0a;
+    color: #F5C875;
+    border: 1px solid #633806;
+  }
+  .q-num {
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    color: #4a4a6a;
+  }
+  .q-year {
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    color: #4a4a6a;
+    margin-left: auto;
+    letter-spacing: 0.5px;
+  }
+
+  .q-text {
+    font-size: 19px;
+    color: #E8D5B0;
+    line-height: 1.55;
+    font-weight: normal;
+  }
+
+  /* ── Options ── */
+  .opts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 1.5rem;
+  }
+  @media (max-width: 480px) {
+    .opts-grid { grid-template-columns: 1fr; }
+  }
+
+  .opt-btn {
+    background: #1a1a35;
+    border: 1px solid #2e2e50;
+    border-radius: 10px;
+    padding: 0.8rem 1rem;
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    color: #c0b8d0;
+    cursor: pointer;
+    text-align: left;
+    line-height: 1.45;
+    transition: all .18s;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .opt-btn:hover:not(:disabled) {
+    border-color: #012169;
+    background: #1e1e40;
+    color: #E8D5B0;
+  }
+  .opt-letter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1px solid #3e3e60;
+    font-size: 11px;
+    font-weight: bold;
+    color: #6a6a8a;
+    flex-shrink: 0;
+    margin-top: 1px;
+    transition: all .18s;
+  }
+  .opt-btn:hover:not(:disabled) .opt-letter {
+    border-color: #012169;
+    color: #85B7EB;
+  }
+  .opt-btn.correct {
+    background: #0f2a0f;
+    border-color: #3B6D11;
+    color: #C0DD97;
+  }
+  .opt-btn.correct .opt-letter {
+    background: #3B6D11;
+    color: #EAF3DE;
+    border-color: #3B6D11;
+  }
+  .opt-btn.wrong {
+    background: #2a0f0f;
+    border-color: #A32D2D;
+    color: #F09595;
+  }
+  .opt-btn.wrong .opt-letter {
+    background: #A32D2D;
+    color: #FCEBEB;
+    border-color: #A32D2D;
+  }
+  .opt-btn.reveal {
+    background: #0f2a0f;
+    border-color: #3B6D11;
+    color: #C0DD97;
+  }
+  .opt-btn.reveal .opt-letter {
+    background: #3B6D11;
+    color: #EAF3DE;
+    border-color: #3B6D11;
+  }
+
+  /* ── Feedback ── */
+  .feedback {
+    margin-top: 1rem;
+    padding: 1rem 1.1rem;
+    border-radius: 10px;
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    line-height: 1.65;
+  }
+  .feedback.correct { background: #0f2a0f; color: #C0DD97; border: 1px solid #3B6D11; }
+  .feedback.wrong   { background: #2a0f0f; color: #F09595; border: 1px solid #A32D2D; }
+  .feedback-head { font-weight: bold; margin-bottom: 4px; font-size: 13px; }
+
+  /* ── Nav ── */
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.75rem;
+  }
+  .score-lbl {
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    color: #4a4a6a;
+  }
+  .score-lbl strong { color: #E8D5B0; }
+
+  .next-btn {
+    background: #012169;
+    color: #E8D5B0;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 24px;
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    transition: background .2s;
+  }
+  .next-btn:hover { background: #C8102E; }
+  .next-btn:disabled { opacity: .3; cursor: not-allowed; background: #012169; }
+
+  /* ── Results ── */
+  .results-card {
+    background: #12122a;
+    border: 1px solid #2a2a4a;
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .res-top {
+    background: #0a0a1a;
+    padding: 2.5rem 2rem;
+    text-align: center;
+    border-bottom: 1px solid #2a2a4a;
+    position: relative;
+  }
+  .res-top::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 4px;
+    background: repeating-linear-gradient(90deg,#C8102E 0 33%,#fff 33% 66%,#012169 66% 100%);
+  }
+  .res-crown { display: flex; justify-content: center; margin-bottom: 1rem; }
+  .res-score {
+    font-family: 'Palatino Linotype', Palatino, Georgia, serif;
+    font-size: 60px;
+    color: #F5E6C8;
+    line-height: 1;
+    font-weight: normal;
+  }
+  .res-pct {
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    color: #5a4a6a;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+
+  .res-body { padding: 1.75rem; }
+
+  .medals-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 1.25rem;
+  }
+  .medal {
+    background: #1a1a35;
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+    border: 1px solid #2a2a4a;
+  }
+  .medal-num { font-family: Georgia, serif; font-size: 32px; font-weight: normal; }
+  .medal-num.c { color: #639922; }
+  .medal-num.w { color: #E24B4A; }
+  .medal-lbl {
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    color: #4a4a6a;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .res-bar-wrap { margin-bottom: 1.5rem; }
+  .res-bar-bg {
+    background: #1a1a35;
+    border-radius: 99px;
+    height: 8px;
+  }
+  .res-bar-fill {
+    height: 8px;
+    border-radius: 99px;
+    background: #C8102E;
+    transition: width 1.2s ease;
+  }
+  .res-bar-labels {
+    display: flex;
+    justify-content: space-between;
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    color: #4a4a6a;
+    margin-top: 5px;
+  }
+
+  .res-title {
+    font-family: 'Palatino Linotype', Palatino, Georgia, serif;
+    font-size: 22px;
+    color: #F5E6C8;
+    text-align: center;
+    margin-bottom: 8px;
+    font-weight: normal;
+  }
+  .res-sub {
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    color: #7a6f80;
+    text-align: center;
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+    max-width: 440px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .restart-btn {
+    display: block;
+    width: 100%;
+    background: #C8102E;
+    color: #F5E6C8;
+    border: none;
+    border-radius: 10px;
+    padding: 13px;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: background .2s;
+  }
+  .restart-btn:hover { background: #012169; }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    color: #3a3a5a;
+    letter-spacing: 0.5px;
+  }
+</style>
+</head>
+<body>
+<div class="page-bg"></div>
+<div class="page-pattern"></div>
+
+<div class="wrap">
+  <!-- Banner -->
+  <div class="banner">
+    <div class="crest">
+      <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="29" y="6" width="14" height="60" fill="#C8102E"/>
+        <rect x="6" y="29" width="60" height="14" fill="#C8102E"/>
+        <rect x="33" y="6" width="6" height="60" fill="#F5E6C8"/>
+        <rect x="6" y="33" width="60" height="6" fill="#F5E6C8"/>
+        <polygon points="36,1 40,13 32,13" fill="#F5E6C8"/>
+        <polygon points="36,71 40,59 32,59" fill="#F5E6C8"/>
+        <circle cx="36" cy="36" r="9" fill="#012169" stroke="#F5E6C8" stroke-width="1.5"/>
+        <circle cx="36" cy="36" r="4" fill="#C8102E"/>
+        <circle cx="36" cy="29" r="2" fill="#F5E6C8"/>
+      </svg>
+    </div>
+    <h1 class="banner-title">The England History Quiz</h1>
+    <div class="banner-rule"></div>
+    <div class="banner-sub">From the Anglo-Saxons to the Modern Age</div>
+  </div>
+
+  <div id="app"></div>
+
+  <div class="footer">crafted with care &mdash; Dieu et mon droit</div>
+</div>
+
+<script>
+const QS = [
+  {era:"Anglo-Saxon",year:"c. 878 AD",
+   q:"Which king legendarily let a peasant woman's cakes burn while brooding over his embattled kingdom?",
+   opts:["King Ethelred","King Alfred the Great","King Cnut","King Harold II"],a:1,
+   fb:"Alfred the Great sheltered in the Somerset marshes while hiding from Viking invaders. His distracted, cake-burning moment became one of England's most beloved — and possibly invented — tales of kingly humility."},
+  {era:"Norman Conquest",year:"1066",
+   q:"In what year did William the Conqueror defeat King Harold II at the Battle of Hastings?",
+   opts:["1042","1066","1087","1100"],a:1,
+   fb:"The most famous date in English history. Harold was killed during the battle and William was crowned King on Christmas Day at Westminster Abbey, forever changing the language, culture and architecture of England."},
+  {era:"Medieval",year:"1215",
+   q:"Which charter, sealed at Runnymede, first established that the monarch was subject to the rule of law?",
+   opts:["The Bill of Rights","The Magna Carta","The Act of Supremacy","The Petition of Right"],a:1,
+   fb:"Magna Carta ('Great Charter') was sealed by the reluctant King John. Its principles — no imprisonment without trial, no taxation without consent — echo through democratic constitutions worldwide to this day."},
+  {era:"Plantagenets",year:"1189–1199",
+   q:"Which English king, known as 'Lionheart', spent almost his entire reign away from England on crusade?",
+   opts:["Henry II","Edward I","Richard I","John I"],a:2,
+   fb:"Richard I reportedly said he would sell London if he could find a buyer — such was his indifference to his kingdom. He spent barely six months of his decade-long reign on English soil."},
+  {era:"Tudors",year:"1527",
+   q:"Henry VIII broke from the Catholic Church primarily in order to achieve what personal goal?",
+   opts:["Seize monastery wealth","Annul his marriage to Catherine of Aragon","Form an alliance with Germany","Claim the French throne"],a:1,
+   fb:"Henry needed a male heir. When the Pope refused to annul his marriage, Henry declared himself Supreme Head of the Church of England — transforming the nation's religion, politics and identity in one bold stroke."},
+  {era:"Tudors",year:"1588",
+   q:"Queen Elizabeth I's England defeated which great naval force, cementing its rise as a sea power?",
+   opts:["The French Armada","The Portuguese Fleet","The Spanish Armada","The Ottoman Navy"],a:2,
+   fb:"The Armada's defeat was aided by English fireships and a ferocious storm. Elizabeth I rallied her troops at Tilbury with a legendary speech: 'I have the heart and stomach of a king of England.'"},
+  {era:"Civil War",year:"1649",
+   q:"Which English king was publicly executed following the Civil War, the only monarch ever to face this fate?",
+   opts:["James I","Charles I","Charles II","James II"],a:1,
+   fb:"Charles I was beheaded at Whitehall on 30 January 1649. He reportedly wore two shirts so he would not shiver with cold and appear afraid before the crowd. Oliver Cromwell's Commonwealth followed."},
+  {era:"Restoration",year:"1666",
+   q:"The Great Fire of London began in a bakery on which street in September 1666?",
+   opts:["Fleet Street","Pudding Lane","Cheapside","Threadneedle Street"],a:1,
+   fb:"Starting at a bakery on Pudding Lane, the fire raged for four days, destroying over 13,000 houses and 87 churches. Remarkably, only a handful of people are known to have perished."},
+  {era:"Georgian",year:"1815",
+   q:"Who commanded British forces to victory over Napoleon at the Battle of Waterloo?",
+   opts:["Lord Nelson","Duke of Marlborough","Duke of Wellington","General Cornwallis"],a:2,
+   fb:"The Duke of Wellington called Waterloo 'the nearest run thing you ever saw in your life.' Napoleon was subsequently exiled to the remote island of Saint Helena, where he died in 1821."},
+  {era:"Victorian",year:"1837–1901",
+   q:"Queen Victoria reigned for how many years — a record at the time, unbroken until Elizabeth II?",
+   opts:["44 years","53 years","63 years","71 years"],a:2,
+   fb:"Victoria reigned from 1837 until her death in 1901 — 63 years and 7 months. Her era saw the British Empire cover a quarter of the globe, and the Industrial Revolution reshape the world."},
+  {era:"World War II",year:"1940–1945",
+   q:"Which prime minister led Britain through most of World War II with his immortal wartime speeches?",
+   opts:["Neville Chamberlain","Clement Attlee","Winston Churchill","Anthony Eden"],a:2,
+   fb:"Churchill became PM on 10 May 1940 — the very day Germany invaded France. His speeches ('We shall fight on the beaches') gave a besieged nation the will to carry on through its darkest hours."},
+  {era:"Modern",year:"1966",
+   q:"England's only FIFA World Cup victory came at Wembley Stadium with a 4–2 final win against which nation?",
+   opts:["France","Brazil","Argentina","West Germany"],a:3,
+   fb:"On 30 July 1966, captain Bobby Moore lifted the Jules Rimet Trophy. Geoff Hurst's hat-trick — including the famous 'did it cross the line?' third goal — remains the only one ever scored in a World Cup final."}
+];
+
+const L = ['A','B','C','D'];
+let cur=0, sel=null, ans=[], score=0;
+
+function render(){
+  const app = document.getElementById('app');
+  if(cur >= QS.length){ showResults(app); return; }
+  const q = QS[cur];
+  const done = ans[cur] !== undefined;
+  const pct = Math.round((cur / QS.length) * 100);
+
+  const dots = QS.map((_,i) => {
+    let c = 'dot';
+    if(i === cur) c += ' current';
+    else if(ans[i] === true) c += ' correct';
+    else if(ans[i] === false) c += ' wrong';
+    return `<div class="${c}"></div>`;
+  }).join('');
+
+  const opts = q.opts.map((o,i) => {
+    let c = 'opt-btn';
+    if(done){
+      if(i === q.a) c += ' reveal';
+      else if(i === sel && sel !== q.a) c += ' wrong';
+    }
+    return `<button class="${c}" onclick="pick(${i})" ${done?'disabled':''}><span class="opt-letter">${L[i]}</span>${o}</button>`;
+  }).join('');
+
+  let fb = '';
+  if(done){
+    const ok = ans[cur];
+    fb = `<div class="feedback ${ok?'correct':'wrong'}">
+      <div class="feedback-head">${ok ? '&#10003; Correct!' : '&#10007; Not quite.'}</div>
+      ${q.fb}
+    </div>`;
+  }
+
+  app.innerHTML = `
+    <div class="dots-row">${dots}</div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:${pct}%"></div></div>
+    <div class="prog-label">Question ${cur+1} of ${QS.length}</div>
+    <div class="q-card">
+      <div class="era-row">
+        <span class="era-badge">${q.era}</span>
+        <span class="q-num">Q${cur+1}</span>
+        <span class="q-year">${q.year}</span>
+      </div>
+      <div class="q-text">${q.q}</div>
+      <div class="opts-grid">${opts}</div>
+      ${fb}
+    </div>
+    <div class="nav-row">
+      <span class="score-lbl">Score: <strong>${score}</strong> / ${Object.keys(ans).length}</span>
+      <button class="next-btn" onclick="nextQ()" ${!done?'disabled':''}>
+        ${cur < QS.length-1 ? 'Next question &rarr;' : 'See results &rarr;'}
+      </button>
+    </div>`;
+}
+
+function pick(i){
+  if(ans[cur] !== undefined) return;
+  sel = i;
+  const ok = i === QS[cur].a;
+  ans[cur] = ok;
+  if(ok) score++;
+  render();
+}
+
+function nextQ(){
+  if(ans[cur] === undefined) return;
+  cur++; sel = null; render();
+}
+
+function restart(){ cur=0; sel=null; ans=[]; score=0; render(); }
+
+function showResults(app){
+  const pct = Math.round((score / QS.length) * 100);
+  const wrong = QS.length - score;
+  let title, sub;
+  if(pct === 100){ title="A true scholar of England!"; sub="Flawless — from Alfred's cakes to Wembley '66, nothing escaped you. The history faculty awaits.";}
+  else if(pct >= 83){ title="Outstanding — almost royal!"; sub="An impressive command of England's long story. A few gaps here and there, but nothing a good read won't fix.";}
+  else if(pct >= 58){ title="A solid performance!"; sub="Not bad at all! You know your Tudors from your Plantagenets. Revisit a few trickier eras and you'll be unbeatable.";}
+  else{ title="England's history awaits!"; sub="Every historian starts somewhere — and England has 1,500 years of stories to discover. Give it another go!";}
+
+  app.innerHTML = `
+    <div class="results-card">
+      <div class="res-top">
+        <div class="res-crown">
+          <svg width="56" height="50" viewBox="0 0 56 50" fill="none">
+            <polygon points="4,44 14,18 28,32 42,18 52,44" fill="#C8102E" stroke="#F5E6C8" stroke-width="1.5" stroke-linejoin="round"/>
+            <rect x="4" y="44" width="48" height="5" rx="2.5" fill="#F5E6C8"/>
+            <circle cx="4" cy="18" r="4" fill="#F5E6C8"/>
+            <circle cx="28" cy="10" r="4" fill="#F5E6C8"/>
+            <circle cx="52" cy="18" r="4" fill="#F5E6C8"/>
+          </svg>
+        </div>
+        <div class="res-score">${score} / ${QS.length}</div>
+        <div class="res-pct">${pct}% correct</div>
+      </div>
+      <div class="res-body">
+        <div class="medals-grid">
+          <div class="medal"><div class="medal-num c">${score}</div><div class="medal-lbl">Correct</div></div>
+          <div class="medal"><div class="medal-num w">${wrong}</div><div class="medal-lbl">Incorrect</div></div>
+        </div>
+        <div class="res-bar-wrap">
+          <div class="res-bar-bg"><div class="res-bar-fill" id="rbar" style="width:0%"></div></div>
+          <div class="res-bar-labels"><span>0%</span><span>100%</span></div>
+        </div>
+        <div class="res-title">${title}</div>
+        <div class="res-sub">${sub}</div>
+        <button class="restart-btn" onclick="restart()">Take the quiz again</button>
+      </div>
+    </div>`;
+  setTimeout(()=>{ const el=document.getElementById('rbar'); if(el) el.style.width=pct+'%'; }, 150);
+}
+
+render();
+</script>
+</body>
+</html>
